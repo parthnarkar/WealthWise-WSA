@@ -5,13 +5,22 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 // Fetch all transactions
 router.get("/", authMiddleware, async (req, res) => {
-  try {
-    const transactions = await Transaction.find({ userId: req.user.userId }).sort({ date: -1 });
-    res.json(transactions);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+    try {
+      let { category, sort } = req.query;
+      let filter = { userId: req.user.userId };
+  
+      if (category) {
+        filter.category = category;
+      }
+  
+      let sortOption = sort === "asc" ? { date: 1 } : { date: -1 };
+  
+      const transactions = await Transaction.find(filter).sort(sortOption);
+      res.json(transactions);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
 
 // Add a new transaction
 router.post("/", authMiddleware, async (req, res) => {
