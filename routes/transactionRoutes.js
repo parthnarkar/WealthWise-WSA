@@ -6,22 +6,25 @@ const authMiddleware = require("../middleware/authMiddleware");
 // Fetch all transactions
 router.get("/", authMiddleware, async (req, res) => {
     try {
-      let { category, sort } = req.query;
-      let filter = { userId: req.user.userId };
+      console.log("Decoded User:", req.user); // Debugging
   
-      if (category) {
-        filter.category = category;
+      if (!req.user || !req.user.userId) {
+        return res.status(401).json({ message: "Unauthorized - Invalid token" });
       }
   
-      let sortOption = sort === "asc" ? { date: 1 } : { date: -1 };
+      const transactions = await Transaction.find({ userId: req.user.userId }).sort({ date: -1 });
   
-      const transactions = await Transaction.find(filter).sort(sortOption);
+      if (!transactions) {
+        return res.status(404).json({ message: "No transactions found" });
+      }
+  
       res.json(transactions);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error("Error fetching transactions:", error);
+      res.status(500).json({ message: "Server error", error: error.message });
     }
   });
-
+  
 // Add a new transaction
 router.post("/", authMiddleware, async (req, res) => {
   try {
