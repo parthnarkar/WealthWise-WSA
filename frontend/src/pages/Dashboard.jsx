@@ -1,5 +1,5 @@
 import React from "react";
-import Sidebar from "../components/Sidebar.jsx";
+import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { Container, Grid } from "@mui/material";
 
