@@ -1,32 +1,35 @@
 import React from "react";
-import { Table, TableHead, TableRow, TableCell, TableBody, Paper, TableContainer } from "@mui/material";
+import { FixedSizeList } from "react-window";
+import { Table, TableHead, TableRow, TableCell, TableBody } from "@mui/material";
 
 const TransactionTable = ({ transactions }) => {
+  const Row = ({ index, style }) => (
+    <TableRow key={transactions[index]._id} style={style}>
+      <TableCell>{transactions[index].category}</TableCell>
+      <TableCell>${transactions[index].amount}</TableCell>
+      <TableCell style={{ color: transactions[index].type === "Income" ? "green" : "red" }}>
+        {transactions[index].type}
+      </TableCell>
+      <TableCell>{new Date(transactions[index].date).toLocaleDateString()}</TableCell>
+    </TableRow>
+  );
+
   return (
-    <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
-      <Table stickyHeader>
-        <TableHead>
-          <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-            <TableCell><b>Category</b></TableCell>
-            <TableCell><b>Amount</b></TableCell>
-            <TableCell><b>Type</b></TableCell>
-            <TableCell><b>Date</b></TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {transactions.map((txn) => (
-            <TableRow key={txn._id} hover>
-              <TableCell>{txn.category}</TableCell>
-              <TableCell>${txn.amount}</TableCell>
-              <TableCell sx={{ color: txn.type === "Income" ? "green" : "red" }}>
-                {txn.type}
-              </TableCell>
-              <TableCell>{new Date(txn.date).toLocaleDateString()}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <Table>
+      <TableHead>
+        <TableRow>
+          <TableCell>Category</TableCell>
+          <TableCell>Amount</TableCell>
+          <TableCell>Type</TableCell>
+          <TableCell>Date</TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        <FixedSizeList height={300} itemCount={transactions.length} itemSize={50} width="100%">
+          {Row}
+        </FixedSizeList>
+      </TableBody>
+    </Table>
   );
 };
 

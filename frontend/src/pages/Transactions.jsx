@@ -1,40 +1,41 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { Button, Container } from "@mui/material";
+import React from "react";
+import { useQuery, useMutation, useQueryClient } from "react-query";
+import { Container, Typography, CircularProgress } from "@mui/material";
 import TransactionTable from "../components/TransactionTable";
 import TransactionForm from "../components/TransactionForm";
-import { getTransactions } from "../services/api";
+import { getTransactions, addTransaction } from "../services/api";
 
 const Transactions = () => {
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const token = localStorage.getItem("token");
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetchTransactions();
-  }, []);
+  // ✅ Fetch transactions using React Query with caching
+  const { data: transactions, isLoading } = useQuery("transactions", () => getTransactions(token), {
+    staleTime: 60000, // Cache data for 1 minute
+  });
 
-  const fetchTransactions = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.error("No token found. User is not authenticated.");
-        return;
-      }
-  
-      const response = await getTransactions(token);
-      console.log("Fetched Transactions:", response.data); // Debugging log
-      setTransactions(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching transactions:", error.response?.data || error.message);
-    }
-  };
+  // ✅ Mutation to add a new transaction and refresh data
+  const mutation = useMutation((newTransaction) => addTransaction(token, newTransaction), {
+    onSuccess: () => {
+      queryClient.invalidateQueries("transactions"); // Refresh transactions after adding
+    },
+  });
 
   return (
     <Container>
-      <h2>Transactions</h2>
-      <TransactionForm onTransactionAdded={fetchTransactions} />
-      {loading ? <p>Loading transactions...</p> : <TransactionTable transactions={transactions} />}
+      <Typography variant="h4" gutterBottom>
+        Transactions
+      </Typography>
+
+      {/* ✅ Transaction Form with Mutation */}
+      <TransactionForm onTransactionAdded={mutation.mutate} />
+
+      {/* ✅ Display Transactions */}
+      {isLoading ? (
+        <CircularProgress />
+      ) : (
+        <TransactionTable transactions={transactions?.transactions || []} />
+      )}
     </Container>
   );
 };

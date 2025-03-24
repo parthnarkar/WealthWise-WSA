@@ -23,3 +23,10 @@ export const addTransaction = async (token, transaction) => {
     headers: { Authorization: `Bearer ${token}` },
   });
 };
+
+// ✅ Get AI Financial Insights
+export const getInsights = async (token) => {
+    return axios.get(`${API_URL}/insights`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  };
